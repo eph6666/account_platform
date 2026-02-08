@@ -179,23 +179,33 @@ export const AccountDetail = () => {
               Loading quota...
             </div>
           ) : quota ? (
-            <div className="space-y-6">
+            <div className="space-y-4">
               <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-800/10 rounded-lg border border-blue-200 dark:border-blue-800">
                 <dt className="text-sm font-medium text-blue-700 dark:text-blue-300 flex items-center gap-2 mb-2">
                   <Icon name="psychology" size="sm" />
-                  Claude Sonnet 4.5 TPM
+                  Claude Sonnet 4.5 V1
                 </dt>
-                <dd className="text-4xl font-bold text-blue-600 dark:text-blue-400">
-                  {formatTPM(quota.claude_sonnet_45_tpm ?? 0)}
+                <dd className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                  {formatTPM(quota.claude_sonnet_45_v1_tpm ?? 0)}
+                </dd>
+              </div>
+
+              <div className="p-4 bg-gradient-to-br from-indigo-50 to-indigo-100/50 dark:from-indigo-900/20 dark:to-indigo-800/10 rounded-lg border border-indigo-200 dark:border-indigo-800">
+                <dt className="text-sm font-medium text-indigo-700 dark:text-indigo-300 flex items-center gap-2 mb-2">
+                  <Icon name="psychology" size="sm" />
+                  Claude Sonnet 4.5 V1 (1M Context)
+                </dt>
+                <dd className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
+                  {formatTPM(quota.claude_sonnet_45_v1_1m_tpm ?? 0)}
                 </dd>
               </div>
 
               <div className="p-4 bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-900/20 dark:to-purple-800/10 rounded-lg border border-purple-200 dark:border-purple-800">
                 <dt className="text-sm font-medium text-purple-700 dark:text-purple-300 flex items-center gap-2 mb-2">
                   <Icon name="auto_awesome" size="sm" />
-                  Claude Opus 4.5 TPM
+                  Claude Opus 4.5
                 </dt>
-                <dd className="text-4xl font-bold text-purple-600 dark:text-purple-400">
+                <dd className="text-3xl font-bold text-purple-600 dark:text-purple-400">
                   {formatTPM(quota.claude_opus_45_tpm ?? 0)}
                 </dd>
               </div>

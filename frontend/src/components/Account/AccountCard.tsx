@@ -8,9 +8,12 @@ interface AccountCardProps {
 }
 
 export const AccountCard = ({ account }: AccountCardProps) => {
-  const sonnetTpm = account.bedrock_quota?.claude_sonnet_45_tpm || 0;
+  const sonnetV1Tpm = account.bedrock_quota?.claude_sonnet_45_v1_tpm || 0;
+  const sonnetV1_1mTpm = account.bedrock_quota?.claude_sonnet_45_v1_1m_tpm || 0;
   const opusTpm = account.bedrock_quota?.claude_opus_45_tpm || 0;
-  const hasQuota = sonnetTpm > 0 || opusTpm > 0;
+  // Total sonnet TPM for display
+  const totalSonnetTpm = sonnetV1Tpm + sonnetV1_1mTpm;
+  const hasQuota = totalSonnetTpm > 0 || opusTpm > 0;
 
   return (
     <Link
@@ -46,14 +49,14 @@ export const AccountCard = ({ account }: AccountCardProps) => {
 
       {hasQuota && (
         <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 space-y-3">
-          {sonnetTpm > 0 && (
+          {totalSonnetTpm > 0 && (
             <div className="flex justify-between items-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
               <span className="text-sm text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
                 <Icon name="psychology" size="sm" className="text-blue-600 dark:text-blue-400" />
-                Sonnet 4.5
+                Sonnet 4.5 Total
               </span>
               <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                {formatTPM(sonnetTpm)}
+                {formatTPM(totalSonnetTpm)}
               </span>
             </div>
           )}

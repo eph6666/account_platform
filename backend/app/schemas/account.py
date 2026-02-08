@@ -58,7 +58,8 @@ class BillingAddress(BaseModel):
 class BedrockQuota(BaseModel):
     """Bedrock quota information."""
 
-    claude_sonnet_45_tpm: int = Field(default=0, description="Claude Sonnet 4.5 TPM quota")
+    claude_sonnet_45_v1_tpm: int = Field(default=0, description="Claude Sonnet 4.5 V1 TPM quota")
+    claude_sonnet_45_v1_1m_tpm: int = Field(default=0, description="Claude Sonnet 4.5 V1 1M Context TPM quota")
     claude_opus_45_tpm: int = Field(default=0, description="Claude Opus 4.5 TPM quota")
     last_updated: int = Field(..., description="Last updated timestamp")
 

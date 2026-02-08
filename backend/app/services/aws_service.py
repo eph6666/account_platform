@@ -173,34 +173,38 @@ class AWSService:
 
     def get_bedrock_quota(self) -> Dict[str, Any]:
         """
-        Get Bedrock Claude 4.5 TPM quota for both Sonnet and Opus.
+        Get Bedrock Claude 4.5 TPM quota for Sonnet (standard and 1M context) and Opus.
 
         Tries Service Quotas API first, falls back to Bedrock API.
 
         Returns:
             Dict with quota information:
-            - claude_sonnet_45_tpm: int (Sonnet TPM quota)
+            - claude_sonnet_45_v1_tpm: int (Sonnet V1 standard TPM quota)
+            - claude_sonnet_45_v1_1m_tpm: int (Sonnet V1 1M context TPM quota)
             - claude_opus_45_tpm: int (Opus TPM quota)
             - last_updated: int (timestamp)
         """
         # Development mode: return mock quota
         if self.dev_mode:
-            # Generate realistic TPM quotas for both models
-            sonnet_quotas = [100000, 200000, 400000, 600000, 800000]
+            # Generate realistic TPM quotas for all three variants
+            sonnet_v1_quotas = [100000, 200000, 400000, 600000, 800000]
+            sonnet_1m_quotas = [20000, 40000, 80000, 100000, 200000]
             opus_quotas = [40000, 80000, 100000, 200000, 400000]
 
             # Use access key to deterministically pick quotas
-            index = sum(ord(c) for c in self.access_key) % len(sonnet_quotas)
-            sonnet_tpm = sonnet_quotas[index]
+            index = sum(ord(c) for c in self.access_key) % len(sonnet_v1_quotas)
+            sonnet_v1_tpm = sonnet_v1_quotas[index]
+            sonnet_1m_tpm = sonnet_1m_quotas[index]
             opus_tpm = opus_quotas[index]
 
             result = {
-                "claude_sonnet_45_tpm": sonnet_tpm,
+                "claude_sonnet_45_v1_tpm": sonnet_v1_tpm,
+                "claude_sonnet_45_v1_1m_tpm": sonnet_1m_tpm,
                 "claude_opus_45_tpm": opus_tpm,
                 "last_updated": int(time.time()),
                 "note": "Mock quota for development",
             }
-            logger.info(f"🚧 DEV: Returned mock Bedrock quota: Sonnet {sonnet_tpm} TPM, Opus {opus_tpm} TPM")
+            logger.info(f"🚧 DEV: Returned mock Bedrock quota: Sonnet V1 {sonnet_v1_tpm} TPM, Sonnet 1M {sonnet_1m_tpm} TPM, Opus {opus_tpm} TPM")
             return result
 
         # Production mode: try real APIs
@@ -225,8 +229,9 @@ class AWSService:
             # List all Bedrock quotas
             response = quotas.list_service_quotas(ServiceCode="bedrock")
 
-            # Look for Claude 4.5 related quotas
-            sonnet_tpm = 0
+            # Look for Claude 4.5 related quotas - track all three variants
+            sonnet_v1_tpm = 0
+            sonnet_v1_1m_tpm = 0
             opus_tpm = 0
             found_quotas = []
 
@@ -236,16 +241,20 @@ class AWSService:
 
                 # Check if this is a Claude 4.5 token quota
                 if "claude" in quota_name_lower and ("4.5" in quota_name_lower or "45" in quota_name_lower):
-                    if "token" in quota_name_lower:
+                    if "token" in quota_name_lower and "per minute" in quota_name_lower:
                         quota_value = int(quota.get("Value", 0))
 
-                        # Identify Sonnet quotas
-                        if "sonnet" in quota_name_lower:
-                            # Prefer standard version (V1) over 1M Context version
-                            if "1m context" not in quota_name_lower:
-                                sonnet_tpm = quota_value
-                                found_quotas.append(f"Sonnet: {quota_name}")
-                                logger.info(f"Found Sonnet quota: {quota_name} = {quota_value}")
+                        # Identify Sonnet V1 1M Context quota
+                        if "sonnet" in quota_name_lower and "1m context" in quota_name_lower:
+                            sonnet_v1_1m_tpm = quota_value
+                            found_quotas.append(f"Sonnet V1 1M: {quota_name}")
+                            logger.info(f"Found Sonnet V1 1M Context quota: {quota_name} = {quota_value}")
+
+                        # Identify Sonnet V1 standard quota (without 1M context)
+                        elif "sonnet" in quota_name_lower and "1m context" not in quota_name_lower:
+                            sonnet_v1_tpm = quota_value
+                            found_quotas.append(f"Sonnet V1: {quota_name}")
+                            logger.info(f"Found Sonnet V1 quota: {quota_name} = {quota_value}")
 
                         # Identify Opus quotas
                         elif "opus" in quota_name_lower:
@@ -254,10 +263,11 @@ class AWSService:
                             logger.info(f"Found Opus quota: {quota_name} = {quota_value}")
 
             # If we found at least one quota, return the result
-            if sonnet_tpm > 0 or opus_tpm > 0:
-                logger.info(f"Successfully retrieved quotas - Sonnet: {sonnet_tpm}, Opus: {opus_tpm}")
+            if sonnet_v1_tpm > 0 or sonnet_v1_1m_tpm > 0 or opus_tpm > 0:
+                logger.info(f"Successfully retrieved quotas - Sonnet V1: {sonnet_v1_tpm}, Sonnet V1 1M: {sonnet_v1_1m_tpm}, Opus: {opus_tpm}")
                 return {
-                    "claude_sonnet_45_tpm": sonnet_tpm,
+                    "claude_sonnet_45_v1_tpm": sonnet_v1_tpm,
+                    "claude_sonnet_45_v1_1m_tpm": sonnet_v1_1m_tpm,
                     "claude_opus_45_tpm": opus_tpm,
                     "last_updated": int(time.time()),
                     "found_quotas": found_quotas,

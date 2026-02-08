@@ -11,7 +11,8 @@ class QuotaSummary(BaseModel):
 
     account_id: str
     account_name: str
-    claude_sonnet_45_tpm: int = Field(default=0, description="Claude Sonnet 4.5 TPM")
+    claude_sonnet_45_v1_tpm: int = Field(default=0, description="Claude Sonnet 4.5 V1 TPM")
+    claude_sonnet_45_v1_1m_tpm: int = Field(default=0, description="Claude Sonnet 4.5 V1 1M Context TPM")
     claude_opus_45_tpm: int = Field(default=0, description="Claude Opus 4.5 TPM")
 
 

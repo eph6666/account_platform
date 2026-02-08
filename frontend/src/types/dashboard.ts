@@ -1,7 +1,8 @@
 export interface QuotaSummary {
   account_id: string;
   account_name: string;
-  claude_sonnet_45_tpm: number;
+  claude_sonnet_45_v1_tpm: number;
+  claude_sonnet_45_v1_1m_tpm: number;
   claude_opus_45_tpm: number;
 }
 

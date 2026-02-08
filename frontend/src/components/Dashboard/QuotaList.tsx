@@ -38,13 +38,21 @@ export const QuotaList = ({ accounts }: QuotaListProps) => {
               </div>
               <div className="text-right space-y-1">
                 <div>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Sonnet 4.5 V1</p>
                   <p className="text-sm font-semibold text-blue-600 dark:text-blue-400">
-                    Sonnet: {formatTPM(account.claude_sonnet_45_tpm)}
+                    {formatTPM(account.claude_sonnet_45_v1_tpm)}
                   </p>
                 </div>
                 <div>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Sonnet 4.5 V1 (1M)</p>
+                  <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">
+                    {formatTPM(account.claude_sonnet_45_v1_1m_tpm)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Opus 4.5</p>
                   <p className="text-sm font-semibold text-purple-600 dark:text-purple-400">
-                    Opus: {formatTPM(account.claude_opus_45_tpm)}
+                    {formatTPM(account.claude_opus_45_tpm)}
                   </p>
                 </div>
               </div>
