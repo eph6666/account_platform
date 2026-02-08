@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # Backend API
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+      - LOG_LEVEL=DEBUG
+      - AWS_REGION=us-east-1
+      - DYNAMODB_ENDPOINT_URL=http://dynamodb-local:8000
+      - DYNAMODB_ACCOUNTS_TABLE=account-platform-aws-accounts-dev
+      - DYNAMODB_USERS_TABLE=account-platform-users-dev
+      - DYNAMODB_AUDIT_LOGS_TABLE=account-platform-audit-logs-dev
+    depends_on:
+      - dynamodb-local
+    networks:
+      - app-network
+    volumes:
+      - ./app:/app/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # DynamoDB Local (in-memory mode to avoid permission issues)
+  dynamodb-local:
+    image: amazon/dynamodb-local:latest
+    ports:
+      - "8001:8000"
+    networks:
+      - app-network
+    command: "-jar DynamoDBLocal.jar -sharedDb -inMemory"
+
+  # DynamoDB Admin UI
+  dynamodb-admin:
+    image: aaronshaf/dynamodb-admin:latest
+    ports:
+      - "8002:8001"
+    environment:
+      - DYNAMO_ENDPOINT=http://dynamodb-local:8000
+      - AWS_REGION=us-east-1
+    depends_on:
+      - dynamodb-local
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  dynamodb-data:
