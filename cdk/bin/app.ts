@@ -108,6 +108,7 @@ const ecsStack = new ECSStack(
     accountsTable: dynamodbStack.accountsTable,
     usersTable: dynamodbStack.usersTable,
     auditLogsTable: dynamodbStack.auditLogsTable,
+    quotaConfigTable: dynamodbStack.quotaConfigTable,
     encryptionKey: kmsStack.encryptionKey,
     userPool: cognitoStack.userPool,
     userPoolClient: cognitoStack.userPoolClient,

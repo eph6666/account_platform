@@ -21,6 +21,7 @@ export interface ECSStackProps extends cdk.StackProps {
   accountsTable: dynamodb.Table;
   usersTable: dynamodb.Table;
   auditLogsTable: dynamodb.Table;
+  quotaConfigTable: dynamodb.Table;
   encryptionKey: kms.Key;
   userPool: cognito.UserPool;
   userPoolClient: cognito.UserPoolClient;
@@ -91,6 +92,7 @@ export class ECSStack extends cdk.Stack {
     ecsProps.accountsTable.grantReadWriteData(taskRole);
     ecsProps.usersTable.grantReadWriteData(taskRole);
     ecsProps.auditLogsTable.grantReadWriteData(taskRole);
+    ecsProps.quotaConfigTable.grantReadWriteData(taskRole);
 
     // Grant KMS permissions for encryption/decryption
     ecsProps.encryptionKey.grantEncryptDecrypt(taskRole);
@@ -171,6 +173,7 @@ export class ECSStack extends cdk.Stack {
         DYNAMODB_ACCOUNTS_TABLE: ecsProps.accountsTable.tableName,
         DYNAMODB_USERS_TABLE: ecsProps.usersTable.tableName,
         DYNAMODB_AUDIT_LOGS_TABLE: ecsProps.auditLogsTable.tableName,
+        DYNAMODB_QUOTA_CONFIG_TABLE: ecsProps.quotaConfigTable.tableName,
 
         // KMS settings
         KMS_KEY_ID: ecsProps.encryptionKey.keyId,
