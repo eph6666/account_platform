@@ -18,7 +18,7 @@ export const StatsCard = ({
   bgColor = 'bg-blue-50 dark:bg-blue-900/10',
 }: StatsCardProps) => {
   return (
-    <div className={`card group hover:shadow-2xl ${bgColor} border-2 border-transparent hover:border-opacity-20`}>
+    <div className={`${bgColor} backdrop-blur-sm rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 transition-all duration-200 hover:shadow-2xl group`}>
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">{title}</p>
