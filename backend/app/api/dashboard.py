@@ -53,22 +53,35 @@ async def get_dashboard_stats(
     total_accounts = len(accounts)
     active_accounts = sum(1 for acc in accounts if acc.get("status") == "active")
 
-    # Calculate total TPM quota (separate for Sonnet V1, Sonnet V1 1M, and Opus) and collect quota summaries
+    # Calculate total TPM quota dynamically from all models
     total_sonnet_tpm = 0
     total_opus_tpm = 0
     accounts_with_quota = []
 
     for account in accounts:
         bedrock_quota = account.get("bedrock_quota", {})
-        sonnet_v1_tpm = bedrock_quota.get("claude_sonnet_45_v1_tpm", 0)
-        sonnet_v1_1m_tpm = bedrock_quota.get("claude_sonnet_45_v1_1m_tpm", 0)
-        opus_tpm = bedrock_quota.get("claude_opus_45_tpm", 0)
+
+        # Calculate total TPM from all TPM fields
+        # Sum all *_tpm fields (excluding last_updated and other non-TPM fields)
+        total_tpm = 0
+        for key, value in bedrock_quota.items():
+            if key.endswith("_tpm") and isinstance(value, (int, float)):
+                total_tpm += value
 
         # Include account if it has any quota
-        if sonnet_v1_tpm > 0 or sonnet_v1_1m_tpm > 0 or opus_tpm > 0:
-            # Total Sonnet TPM includes both V1 standard and 1M context versions
-            total_sonnet_tpm += sonnet_v1_tpm + sonnet_v1_1m_tpm
-            total_opus_tpm += opus_tpm
+        if total_tpm > 0:
+            # Try to get legacy field values for backward compatibility in summary
+            sonnet_v1_tpm = bedrock_quota.get("claude_sonnet_45_v1_tpm") or bedrock_quota.get("claude_sonnet_4_5_v1_tpm", 0)
+            sonnet_v1_1m_tpm = bedrock_quota.get("claude_sonnet_45_v1_1m_tpm") or bedrock_quota.get("claude_sonnet_4_5_v1_1m_tpm", 0)
+            opus_tpm = bedrock_quota.get("claude_opus_45_tpm") or bedrock_quota.get("claude_opus_4_5_tpm", 0)
+
+            # Categorize: Sonnet includes models with "sonnet" in name, Opus includes models with "opus"
+            sonnet_total = sum(v for k, v in bedrock_quota.items() if k.endswith("_tpm") and "sonnet" in k.lower() and isinstance(v, (int, float)))
+            opus_total = sum(v for k, v in bedrock_quota.items() if k.endswith("_tpm") and "opus" in k.lower() and isinstance(v, (int, float)))
+
+            total_sonnet_tpm += sonnet_total
+            total_opus_tpm += opus_total
+
             accounts_with_quota.append(
                 QuotaSummary(
                     account_id=account["account_id"],
