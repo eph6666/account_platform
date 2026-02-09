@@ -15,6 +15,7 @@ export interface EnvironmentConfig {
     accountsTableName: string;
     usersTableName: string;
     auditLogsTableName: string;
+    quotaConfigTableName: string;
     billingMode: 'PAY_PER_REQUEST' | 'PROVISIONED';
   };
 
@@ -67,6 +68,7 @@ export const devConfig: EnvironmentConfig = {
     accountsTableName: 'account-platform-aws-accounts-dev',
     usersTableName: 'account-platform-users-dev',
     auditLogsTableName: 'account-platform-audit-logs-dev',
+    quotaConfigTableName: 'account-platform-quota-config-dev',
     billingMode: 'PAY_PER_REQUEST',
   },
 
@@ -115,6 +117,7 @@ export const prodConfig: EnvironmentConfig = {
     accountsTableName: 'account-platform-aws-accounts-prod',
     usersTableName: 'account-platform-users-prod',
     auditLogsTableName: 'account-platform-audit-logs-prod',
+    quotaConfigTableName: 'account-platform-quota-config-prod',
     billingMode: 'PAY_PER_REQUEST',
   },
 

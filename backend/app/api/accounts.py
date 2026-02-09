@@ -289,7 +289,8 @@ async def get_quota(
     try:
         quota = await service.get_bedrock_quota(account_id)
         return QuotaResponse(
-            claude_sonnet_45_tpm=quota.get("claude_sonnet_45_tpm", 0),
+            claude_sonnet_45_v1_tpm=quota.get("claude_sonnet_45_v1_tpm", 0),
+            claude_sonnet_45_v1_1m_tpm=quota.get("claude_sonnet_45_v1_1m_tpm", 0),
             claude_opus_45_tpm=quota.get("claude_opus_45_tpm", 0),
             last_updated=quota.get("last_updated", 0),
         )

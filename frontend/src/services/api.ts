@@ -12,6 +12,7 @@ import type {
   UserInfo,
   DashboardStats,
 } from '../types';
+import type { QuotaConfig, QuotaConfigUpdate } from '../types/admin';
 
 // Create axios instance
 const apiClient = axios.create({
@@ -164,6 +165,19 @@ export const api = {
   dashboard: {
     getStats: async (): Promise<DashboardStats> => {
       const response = await apiClient.get<DashboardStats>(ENDPOINTS.DASHBOARD_STATS);
+      return response.data;
+    },
+  },
+
+  // Admin endpoints
+  admin: {
+    getQuotaConfig: async (): Promise<QuotaConfig> => {
+      const response = await apiClient.get<QuotaConfig>('/admin/quota-config');
+      return response.data;
+    },
+
+    updateQuotaConfig: async (data: QuotaConfigUpdate): Promise<QuotaConfig> => {
+      const response = await apiClient.put<QuotaConfig>('/admin/quota-config', data);
       return response.data;
     },
   },

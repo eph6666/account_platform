@@ -55,6 +55,9 @@ class Settings(BaseSettings):
     dynamodb_audit_logs_table: str = Field(
         default="account-platform-audit-logs", alias="DYNAMODB_AUDIT_LOGS_TABLE"
     )
+    quota_config_table_name: str = Field(
+        default="account-platform-quota-config", alias="QUOTA_CONFIG_TABLE_NAME"
+    )
 
     # KMS Settings
     kms_key_id: str = Field(default="", alias="KMS_KEY_ID")

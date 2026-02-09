@@ -6,15 +6,17 @@ import { EnvironmentConfig } from '../config/config';
 /**
  * DynamoDB Stack for Account Platform
  *
- * Creates three DynamoDB tables:
+ * Creates four DynamoDB tables:
  * 1. AWS Accounts Table - stores account information and encrypted credentials
  * 2. Users Table - stores user information and roles
  * 3. Audit Logs Table - stores audit logs for sensitive operations
+ * 4. Quota Config Table - stores quota configuration for dynamic model management
  */
 export class DynamoDBStack extends cdk.Stack {
   public readonly accountsTable: dynamodb.Table;
   public readonly usersTable: dynamodb.Table;
   public readonly auditLogsTable: dynamodb.Table;
+  public readonly quotaConfigTable: dynamodb.Table;
 
   constructor(scope: Construct, id: string, config: EnvironmentConfig, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -105,6 +107,21 @@ export class DynamoDBStack extends cdk.Stack {
     });
 
     // ===================================================================
+    // Table 4: Quota Config Table
+    // ===================================================================
+    this.quotaConfigTable = new dynamodb.Table(this, 'QuotaConfigTable', {
+      tableName: config.dynamodb.quotaConfigTableName,
+      partitionKey: {
+        name: 'config_id',
+        type: dynamodb.AttributeType.STRING,
+      },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      encryption: dynamodb.TableEncryption.AWS_MANAGED,
+      pointInTimeRecovery: config.environment === 'prod',
+      removalPolicy: cdk.RemovalPolicy.RETAIN,  // Configuration should be preserved
+    });
+
+    // ===================================================================
     // CloudFormation Outputs
     // ===================================================================
     new cdk.CfnOutput(this, 'AccountsTableName', {
@@ -123,6 +140,12 @@ export class DynamoDBStack extends cdk.Stack {
       value: this.auditLogsTable.tableName,
       description: 'Audit Logs Table Name',
       exportName: `${config.environment}-AuditLogsTableName`,
+    });
+
+    new cdk.CfnOutput(this, 'QuotaConfigTableName', {
+      value: this.quotaConfigTable.tableName,
+      description: 'Quota Config Table Name',
+      exportName: `${config.environment}-QuotaConfigTableName`,
     });
 
     // Add tags

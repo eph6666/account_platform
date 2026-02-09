@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api import accounts, auth, dashboard, health
+from app.api import accounts, admin, auth, dashboard, health
 from app.core.config import settings
 from app.core.logging import logger
 from app.db.dynamodb import DynamoDBClient
@@ -109,6 +109,12 @@ app.include_router(
     dashboard.router,
     prefix=settings.api_prefix,
     tags=["dashboard"],
+)
+
+app.include_router(
+    admin.router,
+    prefix=settings.api_prefix,
+    tags=["admin"],
 )
 
 

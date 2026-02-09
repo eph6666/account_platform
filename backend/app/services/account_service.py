@@ -288,9 +288,21 @@ class AccountService:
         access_key = self.kms_service.decrypt(creds["access_key_encrypted"])
         secret_key = self.kms_service.decrypt(creds["secret_key_encrypted"])
 
+        # Get quota configuration
+        from app.db.quota_config_manager import QuotaConfigManager
+        quota_config_manager = QuotaConfigManager()
+        quota_config = quota_config_manager.get_config()
+
         # Query quota from AWS using the account's region
         aws_service = AWSService(access_key, secret_key, region)
-        quota = aws_service.get_bedrock_quota()
+
+        # Use dynamic quota query if config exists, otherwise fallback to hardcoded
+        if quota_config and quota_config.get("models"):
+            quota = aws_service.get_bedrock_quota_dynamic(quota_config["models"])
+        else:
+            # Fallback to legacy method if no config
+            logger.warning("No quota config found, using legacy quota query")
+            quota = aws_service.get_bedrock_quota()
 
         # Update in database
         self.account_manager.update_bedrock_quota(account_id, quota)

@@ -6,7 +6,7 @@ import { api } from './services/api';
 import { AuthProvider } from './contexts';
 import { MainLayout } from './components/Layout';
 import { PrivateRoute } from './components/PrivateRoute';
-import { Login, Home, AccountList, AccountDetail } from './pages';
+import { Login, Home, AccountList, AccountDetail, Settings, QuotaConfig } from './pages';
 
 // Create a query client
 const queryClient = new QueryClient({
@@ -91,6 +91,8 @@ function App() {
               <Route index element={<Home />} />
               <Route path="accounts" element={<AccountList />} />
               <Route path="accounts/:id" element={<AccountDetail />} />
+              <Route path="settings" element={<Settings />} />
+              <Route path="settings/quota-config" element={<QuotaConfig />} />
             </Route>
           </Routes>
         </BrowserRouter>

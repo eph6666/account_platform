@@ -333,6 +333,98 @@ class AWSService:
                 error_msg, {"error_code": error_code, "error": str(e)}
             )
 
+    def get_bedrock_quota_dynamic(self, models_config: list) -> Dict[str, Any]:
+        """
+        Get Bedrock quota dynamically based on configuration.
+
+        Args:
+            models_config: List of model configurations from quota_config table.
+                           Each config should have: model_id, quota_code_tpm, has_1m_context, etc.
+
+        Returns:
+            Dict with quota information for all configured models
+        """
+        # Development mode: return mock quotas
+        if self.dev_mode:
+            result = {"last_updated": int(time.time())}
+
+            # Generate mock quotas for each enabled model
+            for model in models_config:
+                if not model.get("enabled", False):
+                    continue
+
+                model_id = model["model_id"]
+                # Use model_id to deterministically generate quota
+                seed = sum(ord(c) for c in f"{self.access_key}{model_id}") % 5
+                tpm_values = [100000, 200000, 400000, 600000, 800000]
+
+                # Standard TPM
+                field_name = model_id.replace("-", "_").replace(".", "_") + "_tpm"
+                result[field_name] = tpm_values[seed]
+
+                # 1M context variant if applicable
+                if model.get("has_1m_context", False):
+                    field_name_1m = field_name.replace("_tpm", "_1m_tpm")
+                    result[field_name_1m] = tpm_values[seed] // 5  # 1M typically has lower quota
+
+            logger.info(f"🚧 DEV: Returned mock quota for {len([m for m in models_config if m.get('enabled')])} models")
+            return result
+
+        # Production mode: query Service Quotas API
+        try:
+            quotas_client = self.session.client("service-quotas", region_name=self.region)
+            result = {"last_updated": int(time.time())}
+
+            for model in models_config:
+                if not model.get("enabled", False):
+                    continue
+
+                model_id = model["model_id"]
+                quota_code_tpm = model.get("quota_code_tpm")
+
+                # Query standard TPM quota
+                if quota_code_tpm:
+                    try:
+                        response = quotas_client.get_service_quota(
+                            ServiceCode="bedrock",
+                            QuotaCode=quota_code_tpm
+                        )
+                        quota_value = int(response.get("Quota", {}).get("Value", 0))
+                        field_name = model_id.replace("-", "_").replace(".", "_") + "_tpm"
+                        result[field_name] = quota_value
+                        logger.info(f"✓ Retrieved {model_id} TPM quota: {quota_value}")
+                    except ClientError as e:
+                        logger.warning(f"Could not retrieve {model_id} TPM quota: {e}")
+                        field_name = model_id.replace("-", "_").replace(".", "_") + "_tpm"
+                        result[field_name] = 0
+
+                # Query 1M context TPM quota if applicable
+                if model.get("has_1m_context", False):
+                    quota_code_tpm_1m = model.get("quota_code_tpm_1m")
+                    if quota_code_tpm_1m:
+                        try:
+                            response = quotas_client.get_service_quota(
+                                ServiceCode="bedrock",
+                                QuotaCode=quota_code_tpm_1m
+                            )
+                            quota_value = int(response.get("Quota", {}).get("Value", 0))
+                            field_name = model_id.replace("-", "_").replace(".", "_") + "_1m_tpm"
+                            result[field_name] = quota_value
+                            logger.info(f"✓ Retrieved {model_id} 1M context TPM quota: {quota_value}")
+                        except ClientError as e:
+                            logger.warning(f"Could not retrieve {model_id} 1M context TPM quota: {e}")
+                            field_name = model_id.replace("-", "_").replace(".", "_") + "_1m_tpm"
+                            result[field_name] = 0
+
+            logger.info(f"Successfully retrieved quotas for configured models")
+            return result
+
+        except ClientError as e:
+            error_code = e.response.get("Error", {}).get("Code", "Unknown")
+            logger.error(f"Error querying quotas: {error_code}")
+            # Return empty result with timestamp
+            return {"last_updated": int(time.time())}
+
     def test_bedrock_access(self) -> bool:
         """
         Test if credentials have Bedrock access.

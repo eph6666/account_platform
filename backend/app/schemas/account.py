@@ -100,8 +100,15 @@ class CredentialsResponse(BaseModel):
 
 
 class QuotaResponse(BaseModel):
-    """Schema for quota information response."""
+    """
+    Schema for quota information response.
 
-    claude_sonnet_45_tpm: int = Field(default=0, description="Claude Sonnet 4.5 TPM quota")
+    Supports both fixed fields (for backward compatibility) and dynamic quota fields.
+    Dynamic fields follow the pattern: {model_id}_tpm or {model_id}_1m_tpm
+    """
+    model_config = {"extra": "allow"}  # Allow dynamic quota fields
+
+    claude_sonnet_45_v1_tpm: int = Field(default=0, description="Claude Sonnet 4.5 V1 TPM quota")
+    claude_sonnet_45_v1_1m_tpm: int = Field(default=0, description="Claude Sonnet 4.5 V1 1M Context TPM quota")
     claude_opus_45_tpm: int = Field(default=0, description="Claude Opus 4.5 TPM quota")
     last_updated: int

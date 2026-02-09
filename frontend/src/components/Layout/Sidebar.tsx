@@ -1,26 +1,34 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Icon } from '../Icon';
+import { useIsAdmin } from '../../hooks';
 
 interface NavItem {
   name: string;
   path: string;
   icon: string;
+  adminOnly?: boolean;
 }
 
 const navItems: NavItem[] = [
   { name: 'Dashboard', path: '/', icon: 'dashboard' },
   { name: 'Accounts', path: '/accounts', icon: 'domain' },
+  { name: 'Settings', path: '/settings', icon: 'settings', adminOnly: true },
 ];
 
 export const Sidebar = () => {
   const location = useLocation();
+  const isAdmin = useIsAdmin();
+
+  // Filter nav items based on user role
+  const visibleNavItems = navItems.filter(item => !item.adminOnly || isAdmin);
 
   return (
     <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 min-h-screen">
       <nav className="mt-8 px-4">
         <ul className="space-y-2">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
+          {visibleNavItems.map((item) => {
+            const isActive = location.pathname === item.path ||
+                             (item.path === '/settings' && location.pathname.startsWith('/settings'));
             return (
               <li key={item.path}>
                 <Link
