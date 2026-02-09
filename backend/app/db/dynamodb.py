@@ -47,6 +47,7 @@ class DynamoDBClient:
         self._create_accounts_table()
         self._create_users_table()
         self._create_audit_logs_table()
+        self._create_quota_config_table()
 
     def _create_accounts_table(self):
         """Create AWS accounts table."""
@@ -141,5 +142,27 @@ class DynamoDBClient:
         except ClientError as e:
             if e.response["Error"]["Code"] == "ResourceInUseException":
                 logger.info(f"Table already exists: {self.audit_logs_table_name}")
+            else:
+                raise
+
+    def _create_quota_config_table(self):
+        """Create quota config table."""
+        from app.core.config import settings
+        try:
+            table = self.dynamodb.create_table(
+                TableName=settings.quota_config_table_name,
+                KeySchema=[
+                    {"AttributeName": "config_id", "KeyType": "HASH"},
+                ],
+                AttributeDefinitions=[
+                    {"AttributeName": "config_id", "AttributeType": "S"},
+                ],
+                BillingMode="PAY_PER_REQUEST",
+            )
+            table.wait_until_exists()
+            logger.info(f"Created table: {settings.quota_config_table_name}")
+        except ClientError as e:
+            if e.response["Error"]["Code"] == "ResourceInUseException":
+                logger.info(f"Table already exists: {settings.quota_config_table_name}")
             else:
                 raise

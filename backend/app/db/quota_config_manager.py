@@ -18,7 +18,20 @@ class QuotaConfigManager:
 
     def __init__(self):
         """Initialize QuotaConfigManager with DynamoDB table."""
-        dynamodb = boto3.resource("dynamodb", region_name=settings.aws_region)
+        resource_kwargs = {
+            "region_name": settings.aws_region,
+        }
+
+        # Add endpoint_url for local development
+        if settings.dynamodb_endpoint_url:
+            resource_kwargs["endpoint_url"] = settings.dynamodb_endpoint_url
+
+        # Add credentials for local development
+        if settings.aws_access_key_id and settings.aws_secret_access_key:
+            resource_kwargs["aws_access_key_id"] = settings.aws_access_key_id
+            resource_kwargs["aws_secret_access_key"] = settings.aws_secret_access_key
+
+        dynamodb = boto3.resource("dynamodb", **resource_kwargs)
         self.table = dynamodb.Table(settings.quota_config_table_name)
         logger.info(
             f"QuotaConfigManager initialized with table: {settings.quota_config_table_name}"
