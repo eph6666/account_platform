@@ -1,6 +1,6 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { fetchAuthSession } from 'aws-amplify/auth';
-import { API_BASE_URL, ENDPOINTS } from '../config/api';
+import { API_BASE_URL, API_PREFIX, ENDPOINTS } from '../config/api';
 import type {
   AWSAccount,
   AccountCreateRequest,
@@ -172,12 +172,12 @@ export const api = {
   // Admin endpoints
   admin: {
     getQuotaConfig: async (): Promise<QuotaConfig> => {
-      const response = await apiClient.get<QuotaConfig>('/admin/quota-config');
+      const response = await apiClient.get<QuotaConfig>(`${API_PREFIX}/admin/quota-config`);
       return response.data;
     },
 
     updateQuotaConfig: async (data: QuotaConfigUpdate): Promise<QuotaConfig> => {
-      const response = await apiClient.put<QuotaConfig>('/admin/quota-config', data);
+      const response = await apiClient.put<QuotaConfig>(`${API_PREFIX}/admin/quota-config`, data);
       return response.data;
     },
   },
