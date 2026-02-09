@@ -56,20 +56,16 @@ export const Home = () => {
           description="Currently active"
           gradient="from-emerald-500 to-emerald-600"
         />
-        <StatsCard
-          title="Sonnet TPM Quota"
-          value={formatTPM(stats.total_sonnet_tpm)}
-          iconName="psychology"
-          description="Claude Sonnet 4.5"
-          gradient="from-blue-500 to-indigo-600"
-        />
-        <StatsCard
-          title="Opus TPM Quota"
-          value={formatTPM(stats.total_opus_tpm)}
-          iconName="auto_awesome"
-          description="Claude Opus 4.5"
-          gradient="from-purple-500 to-purple-600"
-        />
+        {stats.model_quotas?.map((modelQuota) => (
+          <StatsCard
+            key={modelQuota.model_id}
+            title={`${modelQuota.display_name} TPM`}
+            value={formatTPM(modelQuota.total_tpm)}
+            iconName={modelQuota.icon_name}
+            description={modelQuota.display_name}
+            gradient={modelQuota.gradient}
+          />
+        ))}
       </div>
 
       <QuotaList accounts={stats.accounts_with_quota} />

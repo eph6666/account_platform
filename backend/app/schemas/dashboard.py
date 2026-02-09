@@ -19,13 +19,26 @@ class QuotaSummary(BaseModel):
     claude_opus_45_tpm: int = Field(default=0, description="Claude Opus 4.5 TPM")
 
 
+class DashboardModelQuota(BaseModel):
+    """Quota information for a dashboard model."""
+
+    model_id: str = Field(..., description="Model ID")
+    display_name: str = Field(..., description="Model display name")
+    total_tpm: int = Field(default=0, description="Total TPM quota for this model")
+    icon_name: str = Field(default="psychology", description="Material icon name")
+    gradient: str = Field(default="from-blue-500 to-indigo-600", description="Tailwind gradient classes")
+
+
 class DashboardStats(BaseModel):
     """Dashboard statistics."""
 
     total_accounts: int = Field(..., description="Total number of accounts")
     active_accounts: int = Field(..., description="Number of active accounts")
-    total_sonnet_tpm: int = Field(default=0, description="Total Sonnet TPM quota")
-    total_opus_tpm: int = Field(default=0, description="Total Opus TPM quota")
+    total_sonnet_tpm: int = Field(default=0, description="Total Sonnet TPM quota (legacy)")
+    total_opus_tpm: int = Field(default=0, description="Total Opus TPM quota (legacy)")
+    model_quotas: List[DashboardModelQuota] = Field(
+        default_factory=list, description="Quota information for dashboard models"
+    )
     accounts_with_quota: List[QuotaSummary] = Field(
         default_factory=list, description="Accounts with quota information"
     )

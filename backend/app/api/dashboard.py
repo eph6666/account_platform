@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, status
 
 from app.core.config import settings
 from app.middleware.cognito_auth import get_current_user, get_dev_user
-from app.schemas.dashboard import DashboardStats, QuotaSummary
+from app.schemas.dashboard import DashboardStats, DashboardModelQuota, QuotaSummary
 from app.services.account_service import AccountService
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
@@ -68,6 +68,11 @@ async def get_dashboard_stats(
     total_opus_tpm = 0
     accounts_with_quota = []
 
+    # Initialize model totals for dashboard models
+    model_totals = {}
+    for model in dashboard_models:
+        model_totals[model["model_id"]] = 0
+
     for account in accounts:
         bedrock_quota = account.get("bedrock_quota", {})
 
@@ -97,7 +102,10 @@ async def get_dashboard_stats(
             if model.get("has_1m_context"):
                 quota_summary_data[field_name_1m] = tpm_1m_value
 
-            # Categorize for totals
+            # Add to model totals
+            model_totals[model_id] += tpm_value + tpm_1m_value
+
+            # Categorize for legacy totals
             if "sonnet" in model_id.lower():
                 total_sonnet_tpm += tpm_value + tpm_1m_value
             elif "opus" in model_id.lower():
@@ -112,10 +120,39 @@ async def get_dashboard_stats(
         if has_quota:
             accounts_with_quota.append(QuotaSummary(**quota_summary_data))
 
+    # Build model_quotas list with appropriate icons and gradients
+    model_quotas = []
+    for model in dashboard_models:
+        model_id = model["model_id"]
+        display_name = model.get("display_name", model_id)
+
+        # Determine icon and gradient based on model name
+        if "sonnet" in model_id.lower():
+            icon_name = "psychology"
+            gradient = "from-blue-500 to-indigo-600"
+        elif "opus" in model_id.lower():
+            icon_name = "auto_awesome"
+            gradient = "from-purple-500 to-purple-600"
+        elif "haiku" in model_id.lower():
+            icon_name = "speed"
+            gradient = "from-emerald-500 to-teal-600"
+        else:
+            icon_name = "smart_toy"
+            gradient = "from-gray-500 to-gray-600"
+
+        model_quotas.append(DashboardModelQuota(
+            model_id=model_id,
+            display_name=display_name,
+            total_tpm=model_totals.get(model_id, 0),
+            icon_name=icon_name,
+            gradient=gradient,
+        ))
+
     return DashboardStats(
         total_accounts=total_accounts,
         active_accounts=active_accounts,
         total_sonnet_tpm=total_sonnet_tpm,
         total_opus_tpm=total_opus_tpm,
+        model_quotas=model_quotas,
         accounts_with_quota=accounts_with_quota,
     )
