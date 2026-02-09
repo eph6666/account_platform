@@ -129,19 +129,19 @@ async def get_dashboard_stats(
         # Determine icon, gradient, and background color based on model name
         model_lower = model_id.lower()
         if "sonnet" in model_lower:
-            icon_name = "psychology"
+            icon_name = "psychology"  # Brain icon
             gradient = "from-blue-500 to-indigo-600"
             bg_color = "bg-blue-50 dark:bg-blue-900/10"
         elif "opus" in model_lower:
-            icon_name = "workspace_premium"  # Premium badge icon for high-end models
+            icon_name = "stars"  # Stars icon for high-end models
             gradient = "from-purple-500 to-purple-600"
             bg_color = "bg-purple-50 dark:bg-purple-900/10"
         elif "haiku" in model_lower:
-            icon_name = "flash_on"  # Lightning icon for fast models
+            icon_name = "bolt"  # Lightning bolt icon for fast models
             gradient = "from-emerald-500 to-teal-600"
             bg_color = "bg-emerald-50 dark:bg-emerald-900/10"
         else:
-            icon_name = "smart_toy"
+            icon_name = "smart_toy"  # Robot icon
             gradient = "from-gray-500 to-gray-600"
             bg_color = "bg-gray-50 dark:bg-gray-800/50"
 
