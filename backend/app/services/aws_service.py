@@ -218,7 +218,7 @@ class AWSService:
 
     def _get_quota_from_service_quotas(self) -> Optional[Dict[str, Any]]:
         """
-        Get quota from Service Quotas API.
+        Get quota from Service Quotas API using specific QuotaCodes.
 
         Returns:
             Quota dict or None if unavailable
@@ -226,41 +226,46 @@ class AWSService:
         try:
             quotas = self.session.client("service-quotas", region_name=self.region)
 
-            # List all Bedrock quotas
-            response = quotas.list_service_quotas(ServiceCode="bedrock")
+            # Define specific QuotaCodes for Claude 4.5 quotas
+            # These are the Global cross-region TPM quotas
+            QUOTA_CODES = {
+                "sonnet_v1": "L-27C57EE8",  # Sonnet 4.5 V1
+                "sonnet_v1_1m": "L-4B26E44A",  # Sonnet 4.5 V1 1M Context
+                "opus_45": "L-3ABF6ACC",  # Opus 4.5
+            }
 
-            # Look for Claude 4.5 related quotas - track all three variants
             sonnet_v1_tpm = 0
             sonnet_v1_1m_tpm = 0
             opus_tpm = 0
             found_quotas = []
 
-            for quota in response.get("Quotas", []):
-                quota_name = quota.get("QuotaName", "")
-                quota_name_lower = quota_name.lower()
+            # Query each quota by QuotaCode
+            for quota_key, quota_code in QUOTA_CODES.items():
+                try:
+                    response = quotas.get_service_quota(
+                        ServiceCode="bedrock",
+                        QuotaCode=quota_code
+                    )
+                    quota = response.get("Quota", {})
+                    quota_name = quota.get("QuotaName", "")
+                    quota_value = int(quota.get("Value", 0))
 
-                # Check if this is a Claude 4.5 token quota
-                if "claude" in quota_name_lower and ("4.5" in quota_name_lower or "45" in quota_name_lower):
-                    if "token" in quota_name_lower and "per minute" in quota_name_lower:
-                        quota_value = int(quota.get("Value", 0))
+                    if quota_key == "sonnet_v1":
+                        sonnet_v1_tpm = quota_value
+                        found_quotas.append(f"Sonnet V1: {quota_name}")
+                        logger.info(f"✓ Retrieved Sonnet 4.5 V1 quota: {quota_value} TPM")
+                    elif quota_key == "sonnet_v1_1m":
+                        sonnet_v1_1m_tpm = quota_value
+                        found_quotas.append(f"Sonnet V1 1M: {quota_name}")
+                        logger.info(f"✓ Retrieved Sonnet 4.5 V1 1M Context quota: {quota_value} TPM")
+                    elif quota_key == "opus_45":
+                        opus_tpm = quota_value
+                        found_quotas.append(f"Opus 4.5: {quota_name}")
+                        logger.info(f"✓ Retrieved Opus 4.5 quota: {quota_value} TPM")
 
-                        # Identify Sonnet V1 1M Context quota
-                        if "sonnet" in quota_name_lower and "1m context" in quota_name_lower:
-                            sonnet_v1_1m_tpm = quota_value
-                            found_quotas.append(f"Sonnet V1 1M: {quota_name}")
-                            logger.info(f"Found Sonnet V1 1M Context quota: {quota_name} = {quota_value}")
-
-                        # Identify Sonnet V1 standard quota (without 1M context)
-                        elif "sonnet" in quota_name_lower and "1m context" not in quota_name_lower:
-                            sonnet_v1_tpm = quota_value
-                            found_quotas.append(f"Sonnet V1: {quota_name}")
-                            logger.info(f"Found Sonnet V1 quota: {quota_name} = {quota_value}")
-
-                        # Identify Opus quotas
-                        elif "opus" in quota_name_lower:
-                            opus_tpm = quota_value
-                            found_quotas.append(f"Opus: {quota_name}")
-                            logger.info(f"Found Opus quota: {quota_name} = {quota_value}")
+                except ClientError as e:
+                    error_code = e.response.get("Error", {}).get("Code", "Unknown")
+                    logger.warning(f"Could not retrieve {quota_key} quota (code: {quota_code}): {error_code}")
 
             # If we found at least one quota, return the result
             if sonnet_v1_tpm > 0 or sonnet_v1_1m_tpm > 0 or opus_tpm > 0:
@@ -273,7 +278,7 @@ class AWSService:
                     "found_quotas": found_quotas,
                 }
 
-            logger.warning("Could not find Claude 4.5 TPM quota in Service Quotas")
+            logger.warning("Could not retrieve any Claude 4.5 TPM quotas")
             return None
 
         except ClientError as e:
@@ -286,7 +291,7 @@ class AWSService:
         Get quota information from Bedrock API (fallback).
 
         Returns:
-            Dict with available information
+            Dict with available information (quota values set to 0 as not directly available)
         """
         try:
             bedrock = self.session.client("bedrock", region_name=self.region)
@@ -305,15 +310,18 @@ class AWSService:
             ]
 
             result = {
-                "claude_45_tpm": 0,  # Not directly available from API
+                "claude_sonnet_45_v1_tpm": 0,  # Not directly available from Bedrock API
+                "claude_sonnet_45_v1_1m_tpm": 0,  # Not directly available from Bedrock API
+                "claude_opus_45_tpm": 0,  # Not directly available from Bedrock API
                 "models_available": len(claude_45_models),
                 "model_ids": [m.get("modelId") for m in claude_45_models],
-                "note": "TPM quota not directly available from Bedrock API",
+                "note": "TPM quota not directly available from Bedrock API - requires Service Quotas API access",
                 "last_updated": int(time.time()),
             }
 
-            logger.info(
-                f"Found {len(claude_45_models)} Claude 4.5 models in Bedrock"
+            logger.warning(
+                f"Bedrock API fallback: Found {len(claude_45_models)} Claude 4.5 models but cannot retrieve TPM quotas. "
+                f"Grant servicequotas:GetServiceQuota permission to access quota information."
             )
             return result
 
