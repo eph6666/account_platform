@@ -4,7 +4,7 @@ import { Icon } from '../components/Icon';
 import { formatTPM } from '../utils/format';
 
 export const Home = () => {
-  const { data: stats, isLoading, isError } = useDashboard();
+  const { data: stats, isLoading, isError, refetch, isFetching } = useDashboard();
 
   if (isLoading) {
     return (
@@ -30,15 +30,30 @@ export const Home = () => {
 
   return (
     <div className="space-y-8 max-w-7xl">
-      <div>
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
-          <Icon name="dashboard" size="lg" className="text-blue-600 dark:text-blue-400" />
-          Dashboard
-        </h1>
-        <p className="mt-3 text-gray-600 dark:text-gray-400 flex items-center gap-2">
-          <Icon name="analytics" size="sm" />
-          Overview of your AWS accounts and resources
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
+            <Icon name="dashboard" size="lg" className="text-blue-600 dark:text-blue-400" />
+            Dashboard
+          </h1>
+          <p className="mt-3 text-gray-600 dark:text-gray-400 flex items-center gap-2">
+            <Icon name="analytics" size="sm" />
+            Overview of your AWS accounts and resources
+          </p>
+        </div>
+        <button
+          onClick={() => refetch()}
+          disabled={isFetching}
+          className="btn-secondary flex items-center gap-2"
+          title="Refresh dashboard data"
+        >
+          <Icon
+            name="refresh"
+            size="sm"
+            className={isFetching ? 'animate-spin' : ''}
+          />
+          Refresh
+        </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">

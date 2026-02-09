@@ -132,10 +132,10 @@ async def get_dashboard_stats(
             icon_name = "psychology"
             gradient = "from-blue-500 to-indigo-600"
         elif "opus" in model_lower:
-            icon_name = "star"  # Changed from auto_awesome to star for better reliability
+            icon_name = "workspace_premium"  # Premium badge icon for high-end models
             gradient = "from-purple-500 to-purple-600"
         elif "haiku" in model_lower:
-            icon_name = "bolt"  # Changed from speed to bolt for better reliability
+            icon_name = "flash_on"  # Lightning icon for fast models
             gradient = "from-emerald-500 to-teal-600"
         else:
             icon_name = "smart_toy"
