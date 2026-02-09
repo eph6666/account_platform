@@ -36,6 +36,24 @@ export const QuotaConfigForm = () => {
     setHasChanges(true);
   };
 
+  const handleToggleDashboard = (index: number) => {
+    const newModels = [...models];
+    const newValue = !newModels[index].show_in_dashboard;
+
+    // Count how many models currently have show_in_dashboard enabled
+    const currentCount = newModels.filter(m => m.show_in_dashboard).length;
+
+    // If trying to enable and already have 2, don't allow
+    if (newValue && currentCount >= 2) {
+      alert('Maximum 2 models can be shown in dashboard');
+      return;
+    }
+
+    newModels[index].show_in_dashboard = newValue;
+    setModels(newModels);
+    setHasChanges(true);
+  };
+
   const handleSave = () => {
     updateMutation.mutate({ models });
     setHasChanges(false);
@@ -178,6 +196,34 @@ export const QuotaConfigForm = () => {
                   }`}>
                     {model.enabled ? 'Enabled' : 'Disabled'}
                   </span>
+                  {model.show_in_dashboard && (
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200">
+                      <Icon name="dashboard" size="sm" className="inline mr-1" />
+                      Dashboard
+                    </span>
+                  )}
+                </div>
+
+                {/* Show in Dashboard Checkbox */}
+                <div className="flex items-center gap-2 mt-2 mb-3">
+                  <input
+                    type="checkbox"
+                    id={`dashboard-${model.model_id}`}
+                    checked={model.show_in_dashboard}
+                    onChange={() => handleToggleDashboard(index)}
+                    disabled={!model.enabled}
+                    className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  />
+                  <label
+                    htmlFor={`dashboard-${model.model_id}`}
+                    className={`text-sm ${
+                      model.enabled
+                        ? 'text-gray-700 dark:text-gray-300 cursor-pointer'
+                        : 'text-gray-400 dark:text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    Show in Dashboard (max 2)
+                  </label>
                 </div>
 
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 font-mono">

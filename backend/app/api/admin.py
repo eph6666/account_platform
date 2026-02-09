@@ -86,6 +86,8 @@ async def update_quota_config(
     """
     Update quota configuration.
 
+    Validates that at most 2 models have show_in_dashboard enabled.
+
     Args:
     - models: List of model configurations to update
 
@@ -97,6 +99,14 @@ async def update_quota_config(
     logger.info(
         f"Admin {current_user['user_id']} updating quota configuration with {len(config_update.models)} models"
     )
+
+    # Validate: at most 2 models can have show_in_dashboard=True
+    dashboard_count = sum(1 for model in config_update.models if model.show_in_dashboard)
+    if dashboard_count > 2:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Maximum 2 models can be shown in dashboard, got {dashboard_count}",
+        )
 
     # Convert Pydantic models to dicts for DynamoDB
     models_data = [model.model_dump() for model in config_update.models]

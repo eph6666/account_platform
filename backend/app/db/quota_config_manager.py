@@ -111,6 +111,7 @@ class QuotaConfigManager:
                 "quota_code_tpm": "L-27C57EE8",
                 "quota_code_rpm": None,
                 "enabled": True,
+                "show_in_dashboard": True,  # Show in dashboard by default
                 "has_1m_context": True,
                 "quota_code_tpm_1m": "L-4B26E44A",
                 "quota_code_rpm_1m": None,
@@ -121,6 +122,7 @@ class QuotaConfigManager:
                 "quota_code_tpm": "L-3ABF6ACC",
                 "quota_code_rpm": None,
                 "enabled": True,
+                "show_in_dashboard": True,  # Show in dashboard by default
                 "has_1m_context": False,
                 "quota_code_tpm_1m": None,
                 "quota_code_rpm_1m": None,
@@ -131,6 +133,7 @@ class QuotaConfigManager:
                 "quota_code_tpm": "L-3DCCFAA4",
                 "quota_code_rpm": None,
                 "enabled": False,  # Disabled by default, admin can enable
+                "show_in_dashboard": False,
                 "has_1m_context": True,
                 "quota_code_tpm_1m": "L-4C59C1F4",
                 "quota_code_rpm_1m": None,
