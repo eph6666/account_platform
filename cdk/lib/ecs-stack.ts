@@ -173,7 +173,7 @@ export class ECSStack extends cdk.Stack {
         DYNAMODB_ACCOUNTS_TABLE: ecsProps.accountsTable.tableName,
         DYNAMODB_USERS_TABLE: ecsProps.usersTable.tableName,
         DYNAMODB_AUDIT_LOGS_TABLE: ecsProps.auditLogsTable.tableName,
-        DYNAMODB_QUOTA_CONFIG_TABLE: ecsProps.quotaConfigTable.tableName,
+        QUOTA_CONFIG_TABLE_NAME: ecsProps.quotaConfigTable.tableName,
 
         // KMS settings
         KMS_KEY_ID: ecsProps.encryptionKey.keyId,
