@@ -23,7 +23,7 @@ export const Sidebar = () => {
   const visibleNavItems = navItems.filter(item => !item.adminOnly || isAdmin);
 
   return (
-    <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 min-h-screen">
+    <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 h-full overflow-y-auto">
       <nav className="mt-8 px-4">
         <ul className="space-y-2">
           {visibleNavItems.map((item) => {

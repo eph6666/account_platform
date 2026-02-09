@@ -29,6 +29,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Check authentication status on mount
   useEffect(() => {
     if (DEV_MODE) {
+      // Set mock admin user in dev mode
+      setUser({
+        user_id: 'dev-user-123',
+        email: 'admin@example.com',
+        role: 'admin',
+        created_at: Date.now() / 1000,
+      });
       setIsAuthenticated(true);
       setIsLoading(false);
       return;
