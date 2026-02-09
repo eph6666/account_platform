@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAccount, useQuota, useRefreshQuota, useIsAdmin } from '../hooks';
+import { useQuotaConfig } from '../hooks/useQuotaConfig';
 import { ExportCredentialsDialog } from '../components/Account';
 import { Icon } from '../components/Icon';
 import { formatTPM } from '../utils/format';
@@ -12,6 +13,7 @@ export const AccountDetail = () => {
 
   const { data: account, isLoading, isError } = useAccount(id);
   const { data: quota, isLoading: quotaLoading } = useQuota(id);
+  const { data: quotaConfig } = useQuotaConfig();
   const refreshQuotaMutation = useRefreshQuota(id!);
 
   const [showExportDialog, setShowExportDialog] = useState(false);
@@ -180,35 +182,47 @@ export const AccountDetail = () => {
             </div>
           ) : quota ? (
             <div className="space-y-4">
-              <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-800/10 rounded-lg border border-blue-200 dark:border-blue-800">
-                <dt className="text-sm font-medium text-blue-700 dark:text-blue-300 flex items-center gap-2 mb-2">
-                  <Icon name="psychology" size="sm" />
-                  Claude Sonnet 4.5 V1
-                </dt>
-                <dd className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                  {formatTPM(quota.claude_sonnet_45_v1_tpm ?? 0)}
-                </dd>
-              </div>
+              {quotaConfig?.models?.filter(m => m.enabled).map((model, index) => {
+                // Generate field name from model_id: claude-sonnet-4.5-v1 -> claude_sonnet_4_5_v1_tpm
+                const fieldName = model.model_id.replace(/-/g, '_').replace(/\./g, '_') + '_tpm';
+                const fieldName1m = model.model_id.replace(/-/g, '_').replace(/\./g, '_') + '_1m_tpm';
+                const quotaValue = (quota as any)[fieldName] ?? 0;
+                const quotaValue1m = model.has_1m_context ? ((quota as any)[fieldName1m] ?? 0) : null;
 
-              <div className="p-4 bg-gradient-to-br from-indigo-50 to-indigo-100/50 dark:from-indigo-900/20 dark:to-indigo-800/10 rounded-lg border border-indigo-200 dark:border-indigo-800">
-                <dt className="text-sm font-medium text-indigo-700 dark:text-indigo-300 flex items-center gap-2 mb-2">
-                  <Icon name="psychology" size="sm" />
-                  Claude Sonnet 4.5 V1 (1M Context)
-                </dt>
-                <dd className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
-                  {formatTPM(quota.claude_sonnet_45_v1_1m_tpm ?? 0)}
-                </dd>
-              </div>
+                // Determine card color based on index
+                const colors = [
+                  { bg: 'from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-800/10', border: 'border-blue-200 dark:border-blue-800', text: 'text-blue-700 dark:text-blue-300', value: 'text-blue-600 dark:text-blue-400' },
+                  { bg: 'from-indigo-50 to-indigo-100/50 dark:from-indigo-900/20 dark:to-indigo-800/10', border: 'border-indigo-200 dark:border-indigo-800', text: 'text-indigo-700 dark:text-indigo-300', value: 'text-indigo-600 dark:text-indigo-400' },
+                  { bg: 'from-purple-50 to-purple-100/50 dark:from-purple-900/20 dark:to-purple-800/10', border: 'border-purple-200 dark:border-purple-800', text: 'text-purple-700 dark:text-purple-300', value: 'text-purple-600 dark:text-purple-400' },
+                  { bg: 'from-pink-50 to-pink-100/50 dark:from-pink-900/20 dark:to-pink-800/10', border: 'border-pink-200 dark:border-pink-800', text: 'text-pink-700 dark:text-pink-300', value: 'text-pink-600 dark:text-pink-400' },
+                ];
+                const color = colors[index % colors.length];
 
-              <div className="p-4 bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-900/20 dark:to-purple-800/10 rounded-lg border border-purple-200 dark:border-purple-800">
-                <dt className="text-sm font-medium text-purple-700 dark:text-purple-300 flex items-center gap-2 mb-2">
-                  <Icon name="auto_awesome" size="sm" />
-                  Claude Opus 4.5
-                </dt>
-                <dd className="text-3xl font-bold text-purple-600 dark:text-purple-400">
-                  {formatTPM(quota.claude_opus_45_tpm ?? 0)}
-                </dd>
-              </div>
+                return (
+                  <div key={model.model_id}>
+                    <div className={`p-4 bg-gradient-to-br ${color.bg} rounded-lg border ${color.border}`}>
+                      <dt className={`text-sm font-medium ${color.text} flex items-center gap-2 mb-2`}>
+                        <Icon name="psychology" size="sm" />
+                        {model.display_name}
+                      </dt>
+                      <dd className={`text-3xl font-bold ${color.value}`}>
+                        {formatTPM(quotaValue)}
+                      </dd>
+                    </div>
+                    {quotaValue1m !== null && (
+                      <div className={`p-4 bg-gradient-to-br ${color.bg} rounded-lg border ${color.border} mt-2`}>
+                        <dt className={`text-sm font-medium ${color.text} flex items-center gap-2 mb-2`}>
+                          <Icon name="psychology" size="sm" />
+                          {model.display_name} (1M Context)
+                        </dt>
+                        <dd className={`text-3xl font-bold ${color.value}`}>
+                          {formatTPM(quotaValue1m)}
+                        </dd>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
 
               <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                 <Icon name="history" size="sm" />
