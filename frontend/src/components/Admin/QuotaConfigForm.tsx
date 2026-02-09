@@ -197,8 +197,8 @@ export const QuotaConfigForm = () => {
                     {model.enabled ? 'Enabled' : 'Disabled'}
                   </span>
                   {model.show_in_dashboard && (
-                    <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200">
-                      <Icon name="dashboard" size="sm" className="inline mr-1" />
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200">
+                      <Icon name="dashboard" size="sm" />
                       Dashboard
                     </span>
                   )}
