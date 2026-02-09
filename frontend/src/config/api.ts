@@ -1,8 +1,8 @@
 // API Configuration
-// In development, use empty string to leverage Vite proxy
-// In production, use full URL
-const isDevMode = import.meta.env.DEV || import.meta.env.VITE_DEV_MODE === 'true';
-export const API_BASE_URL = isDevMode ? '' : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000');
+// Use empty string in both dev and production to leverage relative paths
+// - Development: Vite proxy handles /api -> localhost:8000
+// - Production: CloudFront proxy handles /api -> ALB
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
 export const API_PREFIX = '/api';
 
 export const ENDPOINTS = {
