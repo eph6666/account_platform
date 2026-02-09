@@ -8,7 +8,17 @@ import type { QuotaConfig, QuotaConfigUpdate } from '../types/admin';
 export function useQuotaConfig() {
   return useQuery<QuotaConfig>({
     queryKey: ['quota-config'],
-    queryFn: () => api.admin.getQuotaConfig(),
+    queryFn: async () => {
+      console.log('[useQuotaConfig] Fetching config...');
+      try {
+        const data = await api.admin.getQuotaConfig();
+        console.log('[useQuotaConfig] Received data:', data);
+        return data;
+      } catch (error) {
+        console.error('[useQuotaConfig] Error:', error);
+        throw error;
+      }
+    },
   });
 }
 

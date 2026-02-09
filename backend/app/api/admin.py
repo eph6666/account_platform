@@ -47,20 +47,26 @@ async def get_quota_config(
     """
     Get quota configuration.
 
+    Debug logging enabled.
+
     Returns:
     - Configuration with list of models and their QuotaCodes
     - If not found, initializes with default configuration
 
     Requires: Admin role
     """
-    logger.info(f"Admin {current_user['user_id']} requested quota configuration")
+    logger.info(f"[get_quota_config] Admin {current_user['user_id']} requested quota configuration")
 
     config = manager.get_config()
+    logger.debug(f"[get_quota_config] Config from manager: {config}")
 
     # If no config exists, initialize default
     if not config:
-        logger.info("No quota configuration found, initializing default")
+        logger.info("[get_quota_config] No quota configuration found, initializing default")
         config = manager.initialize_default_config(current_user["user_id"])
+        logger.debug(f"[get_quota_config] Initialized config: {config}")
+    else:
+        logger.info(f"[get_quota_config] Found existing config with {len(config.get('models', []))} models")
 
     return config
 

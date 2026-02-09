@@ -10,9 +10,20 @@ export const QuotaConfigForm = () => {
   const [models, setModels] = useState<ModelConfig[]>([]);
   const [hasChanges, setHasChanges] = useState(false);
 
+  // Debug logging
+  useEffect(() => {
+    console.log('[QuotaConfigForm] Status:', { isLoading, isError, hasConfig: !!config });
+    console.log('[QuotaConfigForm] Config data:', config);
+    if (config?.models) {
+      console.log('[QuotaConfigForm] Models count:', config.models.length);
+      console.log('[QuotaConfigForm] Models:', config.models);
+    }
+  }, [config, isLoading, isError]);
+
   // Initialize models from config
   useEffect(() => {
     if (config?.models) {
+      console.log('[QuotaConfigForm] Initializing models state');
       setModels(config.models);
       setHasChanges(false);
     }

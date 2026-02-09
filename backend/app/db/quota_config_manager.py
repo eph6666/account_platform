@@ -45,15 +45,20 @@ class QuotaConfigManager:
             Configuration dict or None if not found
         """
         try:
+            logger.debug(f"[get_config] Querying table: {self.table.table_name}, key: {self.CONFIG_ID}")
             response = self.table.get_item(Key={"config_id": self.CONFIG_ID})
+            logger.debug(f"[get_config] DynamoDB response: {response}")
             item = response.get("Item")
             if item:
-                logger.info("Retrieved quota configuration")
+                logger.info(f"[get_config] Retrieved quota configuration with {len(item.get('models', []))} models")
                 return item
-            logger.warning("Quota configuration not found")
+            logger.warning("[get_config] Quota configuration not found in DynamoDB")
             return None
         except ClientError as e:
-            logger.error(f"Error retrieving quota configuration: {e}")
+            logger.error(f"[get_config] ClientError retrieving quota configuration: {e}")
+            return None
+        except Exception as e:
+            logger.error(f"[get_config] Unexpected error: {e}", exc_info=True)
             return None
 
     def update_config(
@@ -77,11 +82,16 @@ class QuotaConfigManager:
                 "updated_by": updated_by,
             }
 
+            logger.debug(f"[update_config] Putting item to table: {self.table.table_name}")
+            logger.debug(f"[update_config] Config item: {config}")
             self.table.put_item(Item=config)
-            logger.info(f"Updated quota configuration by {updated_by}")
+            logger.info(f"[update_config] Updated quota configuration by {updated_by}, {len(models)} models")
             return config
         except ClientError as e:
-            logger.error(f"Error updating quota configuration: {e}")
+            logger.error(f"[update_config] ClientError updating quota configuration: {e}")
+            return None
+        except Exception as e:
+            logger.error(f"[update_config] Unexpected error: {e}", exc_info=True)
             return None
 
     def initialize_default_config(self, updated_by: str = "system") -> Dict[str, Any]:
@@ -127,6 +137,14 @@ class QuotaConfigManager:
             },
         ]
 
+        logger.info(f"[initialize_default_config] Creating default config with {len(default_models)} models")
+        logger.debug(f"[initialize_default_config] Default models: {default_models}")
+
         config = self.update_config(default_models, updated_by)
-        logger.info("Initialized default quota configuration")
+
+        if config:
+            logger.info(f"[initialize_default_config] Successfully initialized with {len(config.get('models', []))} models")
+        else:
+            logger.error("[initialize_default_config] Failed to initialize - update_config returned None")
+
         return config
