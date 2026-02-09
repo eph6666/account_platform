@@ -127,14 +127,15 @@ async def get_dashboard_stats(
         display_name = model.get("display_name", model_id)
 
         # Determine icon and gradient based on model name
-        if "sonnet" in model_id.lower():
+        model_lower = model_id.lower()
+        if "sonnet" in model_lower:
             icon_name = "psychology"
             gradient = "from-blue-500 to-indigo-600"
-        elif "opus" in model_id.lower():
-            icon_name = "auto_awesome"
+        elif "opus" in model_lower:
+            icon_name = "star"  # Changed from auto_awesome to star for better reliability
             gradient = "from-purple-500 to-purple-600"
-        elif "haiku" in model_id.lower():
-            icon_name = "speed"
+        elif "haiku" in model_lower:
+            icon_name = "bolt"  # Changed from speed to bolt for better reliability
             gradient = "from-emerald-500 to-teal-600"
         else:
             icon_name = "smart_toy"
