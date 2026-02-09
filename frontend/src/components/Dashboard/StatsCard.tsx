@@ -6,6 +6,7 @@ interface StatsCardProps {
   iconName: string;
   description?: string;
   gradient?: string;
+  bgColor?: string;
 }
 
 export const StatsCard = ({
@@ -14,9 +15,10 @@ export const StatsCard = ({
   iconName,
   description,
   gradient = 'from-blue-500 to-indigo-600',
+  bgColor = 'bg-blue-50 dark:bg-blue-900/10',
 }: StatsCardProps) => {
   return (
-    <div className="card group hover:shadow-2xl">
+    <div className={`card group hover:shadow-2xl ${bgColor} border-2 border-transparent hover:border-opacity-20`}>
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">{title}</p>

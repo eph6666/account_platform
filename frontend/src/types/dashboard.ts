@@ -13,6 +13,7 @@ export interface DashboardModelQuota {
   total_tpm: number;
   icon_name: string;
   gradient: string;
+  bg_color: string;
 }
 
 export interface DashboardStats {

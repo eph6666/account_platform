@@ -126,20 +126,24 @@ async def get_dashboard_stats(
         model_id = model["model_id"]
         display_name = model.get("display_name", model_id)
 
-        # Determine icon and gradient based on model name
+        # Determine icon, gradient, and background color based on model name
         model_lower = model_id.lower()
         if "sonnet" in model_lower:
             icon_name = "psychology"
             gradient = "from-blue-500 to-indigo-600"
+            bg_color = "bg-blue-50 dark:bg-blue-900/10"
         elif "opus" in model_lower:
             icon_name = "workspace_premium"  # Premium badge icon for high-end models
             gradient = "from-purple-500 to-purple-600"
+            bg_color = "bg-purple-50 dark:bg-purple-900/10"
         elif "haiku" in model_lower:
             icon_name = "flash_on"  # Lightning icon for fast models
             gradient = "from-emerald-500 to-teal-600"
+            bg_color = "bg-emerald-50 dark:bg-emerald-900/10"
         else:
             icon_name = "smart_toy"
             gradient = "from-gray-500 to-gray-600"
+            bg_color = "bg-gray-50 dark:bg-gray-800/50"
 
         model_quotas.append(DashboardModelQuota(
             model_id=model_id,
@@ -147,6 +151,7 @@ async def get_dashboard_stats(
             total_tpm=model_totals.get(model_id, 0),
             icon_name=icon_name,
             gradient=gradient,
+            bg_color=bg_color,
         ))
 
     return DashboardStats(

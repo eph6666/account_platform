@@ -27,6 +27,7 @@ class DashboardModelQuota(BaseModel):
     total_tpm: int = Field(default=0, description="Total TPM quota for this model")
     icon_name: str = Field(default="psychology", description="Material icon name")
     gradient: str = Field(default="from-blue-500 to-indigo-600", description="Tailwind gradient classes")
+    bg_color: str = Field(default="bg-blue-50 dark:bg-blue-900/10", description="Background color classes")
 
 
 class DashboardStats(BaseModel):

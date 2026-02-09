@@ -63,6 +63,7 @@ export const Home = () => {
           iconName="domain"
           description="All managed accounts"
           gradient="from-blue-500 to-blue-600"
+          bgColor="bg-blue-50 dark:bg-blue-900/10"
         />
         <StatsCard
           title="Active Accounts"
@@ -70,6 +71,7 @@ export const Home = () => {
           iconName="check_circle"
           description="Currently active"
           gradient="from-emerald-500 to-emerald-600"
+          bgColor="bg-emerald-50 dark:bg-emerald-900/10"
         />
         {stats.model_quotas?.map((modelQuota) => (
           <StatsCard
@@ -79,6 +81,7 @@ export const Home = () => {
             iconName={modelQuota.icon_name}
             description={modelQuota.display_name}
             gradient={modelQuota.gradient}
+            bgColor={modelQuota.bg_color}
           />
         ))}
       </div>
